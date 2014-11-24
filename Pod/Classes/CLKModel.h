@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import <CLKCopiedSnippets/KeychainItemWrapper.h>
+#import "KeychainItemWrapper.h"
 #import "NSString+CLKPropertyFormats.h"
 
 @interface CLKModel : NSObject

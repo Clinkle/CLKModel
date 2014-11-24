@@ -1,7 +1,6 @@
 #import "CLKModel.h"
 #import <objc/runtime.h>
 #import <ObjectiveSugar/NSArray+ObjectiveSugar.h>
-#import <CLKUtilities/CLKUtilities.h>
 
 /**
  This protocol exists to suppress compiler warnings.
@@ -668,8 +667,7 @@
 
 - (NSString *)description
 {
-    NSString *jsonString = [CLKUtilities jsonFromCollection:[self toJSON] prettyPrinted:NO];
-    return [NSString stringWithFormat:@"%@ with JSON %@", [super description], jsonString];
+    return [NSString stringWithFormat:@"%@ with JSON %@", [self toJSON]];
 }
 
 @end

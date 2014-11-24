@@ -1,5 +1,5 @@
 #import "NSArray+CLKModel.h"
-#import <CLKModel/CLKModel.h>
+#import "CLKModel.h"
 
 @implementation NSArray (CLKModel)
 
