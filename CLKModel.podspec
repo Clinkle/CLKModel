@@ -7,8 +7,8 @@ Pod::Spec.new do |s|
   s.author           = { "tsheaff" => "tyler@clinkle.com" }
   s.source           = { :git => "https://github.com/Clinkle/CLKModel.git", :tag => s.version.to_s }
 
-  spec.dependency 'ObjectiveSugar', '~> 1.1.0'
-  spec.frameworks = 'Security'
+  s.dependency 'ObjectiveSugar', '~> 1.1.0'
+  s.frameworks = 'Security'
 
   s.platform     = :ios, '7.0'
   s.requires_arc = true
