@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name             = "CLKParametricAnimations"
+  s.name             = "CLKModel"
   s.version          = "0.1.0"
   s.summary          = "CLKModel provides an excellent for your iOS app's data layer."
   s.homepage         = "https://github.com/Clinkle/CLKModel"
