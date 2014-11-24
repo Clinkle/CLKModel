@@ -1,6 +1,6 @@
 # CLKModel
 
-CLKModel provides an excellent for your iOS app's data layer.
+CLKModel provides an excellent superclass for your iOS app's data layer types.
 
 CLKModel handles parsing to and from JSON, including nested parsing of subsequent CLKModel subclasses, and generic types in arrays.
 
