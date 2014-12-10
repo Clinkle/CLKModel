@@ -184,6 +184,9 @@
 - (void)assignValue:(id)value
          toProperty:(NSString *)property
 {
+    if (!value || !property) {
+        return;
+    }
     NSString *type = [self.class typeOfPropertyNamed:property];
     BOOL isPrimitive = [self.class typeIsPrimitive:type];
     if (isPrimitive) {
@@ -239,6 +242,9 @@
 
 + (NSString *)typeOfPropertyNamed:(NSString *)name
 {
+    if (!name) {
+        return nil;
+    }
     objc_property_t property = class_getProperty(self, [name UTF8String]);
     if (property == NULL) {
         return nil;
