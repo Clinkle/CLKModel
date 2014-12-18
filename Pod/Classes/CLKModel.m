@@ -673,7 +673,7 @@
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"%@ with JSON %@", [self toJSON]];
+    return [NSString stringWithFormat:@"%@ with JSON %@", [self class], [self toJSON]];
 }
 
 @end
