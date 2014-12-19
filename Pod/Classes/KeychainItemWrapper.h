@@ -2,9 +2,9 @@
  File: KeychainItemWrapper.h
  Abstract:
  Objective-C wrapper for accessing a single keychain item.
-
- Version: 1.2
-
+ 
+ Version: 1.2 - ARCified from https://gist.github.com/dhoerl/1170641
+ 
  Disclaimer: IMPORTANT:  This Apple software is supplied to you by Apple
  Inc. ("Apple") in consideration of your agreement to the following
  terms, and your use, installation, modification or redistribution of
@@ -55,17 +55,10 @@
  CF/NS container objects.
  */
 @interface KeychainItemWrapper : NSObject
-{
-    NSMutableDictionary *keychainItemData;      // The actual keychain item data backing store.
-    NSMutableDictionary *genericPasswordQuery;  // A placeholder for the generic keychain item query used to locate the item.
-}
-
-@property (nonatomic, retain) NSMutableDictionary *keychainItemData;
-@property (nonatomic, retain) NSMutableDictionary *genericPasswordQuery;
 
 // Designated initializer.
-- (instancetype)initWithIdentifier:(NSString *)identifier
-             accessGroup:(NSString *)accessGroup;
+- (instancetype)initWithIdentifier:(NSString *)identifier 
+                       accessGroup:(NSString *)accessGroup;
 
 - (void)setObject:(id)inObject
            forKey:(id)key;

@@ -11,6 +11,6 @@ Pod::Spec.new do |s|
   s.frameworks = 'Security'
 
   s.platform     = :ios, '7.0'
-  s.requires_arc = false
+  s.requires_arc = true
   s.source_files = 'Pod/Classes'
 end
