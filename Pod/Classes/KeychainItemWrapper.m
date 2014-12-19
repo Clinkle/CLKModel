@@ -328,15 +328,10 @@
 #endif
 
         // An implicit assumption is that you can only update a single item at a time.
-#ifndef NDEBUG
-        result =
-#endif
-        SecItemUpdate((__bridge CFDictionaryRef)updateItem, (__bridge CFDictionaryRef)tempCheck);
-        NSAssert( result == noErr, @"Couldn't update the Keychain Item." );
+        result = SecItemUpdate((__bridge CFDictionaryRef)updateItem, (__bridge CFDictionaryRef)tempCheck);
     } else {
         // No previous item found; add the new one.
         result = SecItemAdd((__bridge CFDictionaryRef)[self dictionaryToSecItemFormat:keychainItemData], NULL);
-        NSAssert( result == noErr, @"Couldn't add the Keychain Item." );
     }   
     if(attributes) {
         CFRelease(attributes);
