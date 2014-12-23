@@ -7,7 +7,7 @@
 
 + (BOOL)saveKeychainValue:(id)value 
                    forKey:(NSString*)key;
-+ (BOOL)deleteKaychainValueForKey:(NSString *)key;
++ (BOOL)deleteKeychainValueForKey:(NSString *)key;
 + (id)getKeychainValueForKey:(NSString*)key;
 
 @end
