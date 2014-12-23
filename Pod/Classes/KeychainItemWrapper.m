@@ -28,18 +28,21 @@
     
     OSStatus result = SecItemAdd((__bridge CFDictionaryRef)keychainQuery, NULL);
     NSAssert( result == noErr, @"Couldn't add the Keychain Item." );
-    return (result == noErr) ? YES : NO;
+    return (result == noErr);
 }
 
 + (BOOL)deleteKeychainValueForKey:(NSString *)key
 {
     NSMutableDictionary *keychainQuery = [self getKeychainQuery:key];
     OSStatus result = SecItemDelete((__bridge CFDictionaryRef)keychainQuery);
-    return (result == noErr) ? YES : NO;
+    return (result == noErr);
 }
 
 + (id)getKeychainValueForKey:(NSString *)key
 {
+    if (!key) {
+        return nil;
+    }
     id value = nil;
     NSMutableDictionary *keychainQuery = [self getKeychainQuery:key];
     CFDataRef keyData = NULL;
