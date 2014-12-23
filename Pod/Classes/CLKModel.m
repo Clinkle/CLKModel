@@ -15,7 +15,6 @@
 
 @interface CLKModel ()<CLKModelOptionalSubclassMethods>
 
-@property (nonatomic, strong) NSMutableDictionary *keychains;
 @end
 
 @implementation CLKModel
@@ -219,7 +218,7 @@
 {
     unsigned int count = 0;
     objc_property_t *properties = class_copyPropertyList(self, &count);
-
+    
     NSMutableArray *propertyNames = [NSMutableArray arrayWithCapacity:count];
     for (int i = 0; i < count; i++) {
         const char *propertyName = property_getName(properties[i]);
@@ -263,13 +262,13 @@
     }
     // then we ignore the T
     encodedType = [encodedType substringFromIndex:1];
-
+    
     // for subclasses of NSObject, we strip the opening @" and closing "
     if (encodedType.length >= 3 && [[encodedType substringToIndex:2] isEqualToString:@"@\""]) {
         NSString *objectType = [encodedType substringFromIndex:2];
         return [objectType substringToIndex:objectType.length - 1];
     }
-
+    
     NSDictionary *primitivesMapping = [self encodedPrimitiveTypeToType];
     return primitivesMapping[encodedType]; // may be nil if unrecognized type
 }
@@ -277,23 +276,23 @@
 + (NSDictionary *)encodedPrimitiveTypeToType
 {
     return @{
-            // boolean
-            @"B" : @"BOOL",
-            @"c" : @"BOOL",
-
-            // integer
-            @"s" : @"short",
-            @"S" : @"unsigned short",
-            @"i" : @"int",
-            @"I" : @"unsigned int",
-            @"q" : @"long",
-            @"Q" : @"unsigned long",
-
-            // floating point
-            @"f" : @"float",
-            @"d" : @"double",
-            @"D" : @"long double",
-    };
+             // boolean
+             @"B" : @"BOOL",
+             @"c" : @"BOOL",
+             
+             // integer
+             @"s" : @"short",
+             @"S" : @"unsigned short",
+             @"i" : @"int",
+             @"I" : @"unsigned int",
+             @"q" : @"long",
+             @"Q" : @"unsigned long",
+             
+             // floating point
+             @"f" : @"float",
+             @"d" : @"double",
+             @"D" : @"long double",
+             };
 }
 
 + (BOOL)typeIsPrimitive:(NSString *)type
@@ -353,36 +352,23 @@
     return info[@"CFBundleDisplayName"];
 }
 
-+ (KeychainItemWrapper *)makeKeychainFor:(NSString *)property
-{
-    NSString *identifier = [self.class.keychainNamespace stringByAppendingString:property];
-    return [[KeychainItemWrapper alloc] initWithIdentifier:identifier
-                                               accessGroup:nil];
-}
-
 + (id)valueOfKeychainFor:(NSString *)property
 {
-    KeychainItemWrapper *keychain = [self makeKeychainFor:property];
-    return [self valueOfKeychain:keychain];
-}
-
-+ (id)valueOfKeychain:(KeychainItemWrapper *)keychain
-{
-    return [keychain objectForKey:(__bridge id)kSecValueData];
+    return [KeychainItemWrapper getKeychainValueForKey:property];
 }
 
 + (void)setValue:(id)value
-      toKeychain:(KeychainItemWrapper *)keychain
+toKeychainForKey:(NSString *)property
 {
-    [keychain setObject:value
-                 forKey:(__bridge id)kSecValueData];
+    [KeychainItemWrapper saveKeychainValue:value
+                                    forKey:property];
 }
 
 + (void)resetKeychainItems
 {
     for (NSString *property in self.keychainBackedProperties) {
-        [[self makeKeychainFor:property] resetKeychainItem];
-
+        [KeychainItemWrapper deleteKeychainValueForKey:property];
+        
         if ([self respondsToSelector:@selector(singleton)] && [self respondsToSelector:@selector(hasBeenCreated)] && [self hasBeenCreated]) {
             id singleton = [self singleton];
             NSString *type = [self typeOfPropertyNamed:property];
@@ -401,9 +387,7 @@
 - (void)initializeKeychainProperties
 {
     NSArray *keychainBackedProperties = self.class.keychainBackedProperties;
-    self.keychains = [NSMutableDictionary dictionaryWithCapacity:keychainBackedProperties.count];
     for (NSString *property in keychainBackedProperties) {
-        self.keychains[property] = [self.class makeKeychainFor:property];
         [self prepareWritingFor:property];
         [self initializeFromKeychain:property];
     }
@@ -411,19 +395,14 @@
 
 - (void)initializeFromKeychain:(NSString *)property
 {
-    KeychainItemWrapper *wrapper = (self.keychains)[property];
-    id value = [self.class valueOfKeychain:wrapper];
-
+    id value = [KeychainItemWrapper getKeychainValueForKey:property];
     if ([self isEmptyValue:value]) {
-        value = [self.class legacyValueForProperty:property];
+        value = [self.class defaultValueForProperty:property];
         if ([self isEmptyValue:value]) {
-            value = [self.class defaultValueForProperty:property];
-            if ([self isEmptyValue:value]) {
-                return;
-            }
+            return;
         }
     }
-
+    
     NSString *type = [[self class] typeOfPropertyNamed:property];
     Class klass = NSClassFromString(type);
     if ([klass isSubclassOfClass:[NSDate class]]) {
@@ -439,7 +418,7 @@
         value = [self mutableValueForValue:value
                                    ofClass:klass];
     }
-
+    
     [self setValue:value
             forKey:property];
 }
@@ -457,12 +436,11 @@
 {
     id value = [self valueForKey:property];
     NSString *type = [[self class] typeOfPropertyNamed:property];
-    KeychainItemWrapper *wrapper = self.keychains[property];
-
+    
     BOOL isPrimitive = [self.class typeIsPrimitive:type];
     if (isPrimitive) {
         value = [NSString stringWithFormat:@"%@",
-                                           value];
+                 value];
     } else if ([type isEqualToString:@"NSString"]) {
         value = value ? value : @"";
     } else if ([type isEqualToString:@"NSDate"]) {
@@ -470,20 +448,20 @@
             // keychains don't play nice with NSDates, so we write as a timestamp
             NSDate *date = (NSDate *)value;
             value = [NSString stringWithFormat:@"%f",
-                                               date.timeIntervalSince1970];
+                     date.timeIntervalSince1970];
         } else {
             value = @"";
         }
     }
-
+    
     Class klass = NSClassFromString(type);
     if (klass && [klass isSubclassOfClass:[CLKModel class]]) {
         CLKModel *model = (CLKModel *)value;
         value = [model toString];
     }
-
+    
     [self.class setValue:value
-              toKeychain:wrapper];
+        toKeychainForKey:property];
 }
 
 - (void)cleanupKeychainObservers
@@ -503,8 +481,8 @@
 + (NSString *)defaultsKeyForProperty:(NSString *)property
 {
     return [NSString stringWithFormat:@"%@_%@",
-                                      self,
-                                      property];
+            self,
+            property];
 }
 
 - (void)initializeDefaultsProperties
@@ -521,10 +499,10 @@
     
     // note that objectForKey returns an immutable object even if the value you originally set was mutable.
     id value = [[NSUserDefaults standardUserDefaults] objectForKey:defaultsKey];
-
+    
     NSString *type = [self.class typeOfPropertyNamed:property];
     Class klass = NSClassFromString(type);
-
+    
     value = [self mutableValueForValue:value
                                ofClass:klass];
     if (value && klass) {
@@ -542,7 +520,7 @@
             }
         }
     }
-
+    
     if (!value) {
         value = [self.class legacyValueForProperty:property];
         // TODO: delete legacy value from disk
@@ -550,7 +528,7 @@
             value = [self.class defaultValueForProperty:property];
         }
     }
-
+    
     if (value) {
         if ([type isEqualToString:@"NSMutableDictionary"]) {
             value = [(NSDictionary *)value mutableCopy];
@@ -570,27 +548,27 @@
     if (!klass) {
         return value;
     }
-
+    
     if ([klass isSubclassOfClass:[NSMutableArray class]]) {
         return [(NSArray *)value mutableCopy];
     }
-
+    
     if ([klass isSubclassOfClass:[NSMutableSet class]]) {
         return [(NSSet *)value mutableCopy];
     }
-
+    
     if ([klass isSubclassOfClass:[NSMutableString class]]) {
         return [(NSString *)value mutableCopy];
     }
-
+    
     if ([klass isSubclassOfClass:[NSMutableDictionary class]]) {
         return [(NSDictionary *)value mutableCopy];
     }
-
+    
     if ([klass isSubclassOfClass:[NSMutableData class]]) {
         return [(NSData *)value mutableCopy];
     }
-
+    
     return value;
 }
 
@@ -617,8 +595,8 @@
             }
         }
     }
-
-
+    
+    
     NSString *defaultsKey = [self.class defaultsKeyForProperty:property];
     if (value) {
         [[NSUserDefaults standardUserDefaults] setObject:value
@@ -648,7 +626,7 @@
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *dictionaryOfDefaults = [defaults dictionaryRepresentation];
-
+    
     NSArray *whitelistedKeys = [self whitelistedKeys];
     for (NSString *key in dictionaryOfDefaults.allKeys) {
         if (![whitelistedKeys containsObject:key]) {
