@@ -10,6 +10,9 @@
 
 + (NSMutableDictionary *)getKeychainQuery:(NSString *)key
 {
+    if (!key) {
+        return nil;
+    }
     return [@{(__bridge id)kSecClass            : (__bridge id)kSecClassGenericPassword,
               (__bridge id)kSecAttrService      : key,
               (__bridge id)kSecAttrAccount      : key,
@@ -21,6 +24,10 @@
                    forKey:(NSString*)key
 {
     NSMutableDictionary *keychainQuery = [self getKeychainQuery:key];
+    if (!keychainQuery) {
+        return NO;
+    }
+
     [self deleteKeychainValueForKey:key];
     
     [keychainQuery setObject:[NSKeyedArchiver archivedDataWithRootObject:value]
@@ -34,17 +41,21 @@
 + (BOOL)deleteKeychainValueForKey:(NSString *)key
 {
     NSMutableDictionary *keychainQuery = [self getKeychainQuery:key];
+    if (!keychainQuery) {
+        return NO;
+    }
     OSStatus result = SecItemDelete((__bridge CFDictionaryRef)keychainQuery);
     return (result == noErr);
 }
 
 + (id)getKeychainValueForKey:(NSString *)key
 {
-    if (!key) {
+    NSMutableDictionary *keychainQuery = [self getKeychainQuery:key];
+    if (!keychainQuery) {
         return nil;
     }
+
     id value = nil;
-    NSMutableDictionary *keychainQuery = [self getKeychainQuery:key];
     CFDataRef keyData = NULL;
     
     [keychainQuery setObject:(__bridge id)kCFBooleanTrue
