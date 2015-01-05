@@ -13,10 +13,10 @@
     if (!key) {
         return nil;
     }
+    /* the keychain requires kSecAttrGeneric AND kSecAttrService to make the entry unique */
     return [@{(__bridge id)kSecClass            : (__bridge id)kSecClassGenericPassword,
+              (__bridge id)kSecAttrGeneric      : key,
               (__bridge id)kSecAttrService      : key,
-              (__bridge id)kSecAttrAccount      : key,
-              (__bridge id)kSecAttrAccessible   : (__bridge id)kSecAttrAccessibleAfterFirstUnlock
               } mutableCopy];
 }
 
@@ -28,9 +28,21 @@
         return NO;
     }
 
-    [self deleteKeychainValueForKey:key];
-    
-    [keychainQuery setObject:[NSKeyedArchiver archivedDataWithRootObject:value]
+    BOOL didDelete = [self deleteKeychainValueForKey:key];
+    if (!didDelete) {
+        // TODO ??
+    }
+
+    if (!value) {
+        return NO;
+    }
+
+    if ([value isKindOfClass:[NSString class]]) {
+        value = [value dataUsingEncoding:NSUTF8StringEncoding];
+    }
+    [keychainQuery setObject:(__bridge id)kSecAttrAccessibleAfterFirstUnlock
+                      forKey:(__bridge id)kSecAttrAccessible];
+    [keychainQuery setObject:value
                       forKey:(__bridge id)kSecValueData];
     
     OSStatus result = SecItemAdd((__bridge CFDictionaryRef)keychainQuery, NULL);
@@ -64,9 +76,11 @@
                       forKey:(__bridge id)kSecMatchLimit];
     
     if (SecItemCopyMatching((__bridge CFDictionaryRef)keychainQuery, (CFTypeRef *)&keyData) == noErr) {
-        value = [NSKeyedUnarchiver unarchiveObjectWithData:(__bridge NSData *)keyData];
+        NSData *data = (__bridge NSData *)keyData;
+        value = [[NSString alloc] initWithBytes:[data bytes]
+                                         length:[data length]
+                                       encoding:NSUTF8StringEncoding];
     }
-    
     if (keyData) {
         CFRelease(keyData);
     }
