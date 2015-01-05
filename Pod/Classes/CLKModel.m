@@ -368,7 +368,7 @@ toKeychainForKey:(NSString *)property
 
 + (NSString *)keychainKeyForProperty:(NSString *)property
 {
-    return [self.class.keychainNamespace stringByAppendingString:property];
+    return [[self keychainNamespace] stringByAppendingString:property];
 }
 
 + (void)resetKeychainItems
@@ -403,7 +403,8 @@ toKeychainForKey:(NSString *)property
 
 - (void)initializeFromKeychain:(NSString *)property
 {
-    id value = [KeychainItemWrapper getKeychainValueForKey:property];
+    NSString *key = [[self class] keychainKeyForProperty:property];
+    id value = [KeychainItemWrapper getKeychainValueForKey:key];
     if ([self isEmptyValue:value]) {
         value = [self.class defaultValueForProperty:property];
         if ([self isEmptyValue:value]) {
