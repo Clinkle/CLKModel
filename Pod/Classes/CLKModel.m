@@ -354,20 +354,28 @@
 
 + (id)valueOfKeychainFor:(NSString *)property
 {
-    return [KeychainItemWrapper getKeychainValueForKey:property];
+    NSString *key = [self keychainKeyForProperty:property];
+    return [KeychainItemWrapper getKeychainValueForKey:key];
 }
 
 + (void)setValue:(id)value
 toKeychainForKey:(NSString *)property
 {
+    NSString *key = [self keychainKeyForProperty:property];
     [KeychainItemWrapper saveKeychainValue:value
-                                    forKey:property];
+                                    forKey:key];
+}
+
++ (NSString *)keychainKeyForProperty:(NSString *)property
+{
+    return [self.class.keychainNamespace stringByAppendingString:property];
 }
 
 + (void)resetKeychainItems
 {
     for (NSString *property in self.keychainBackedProperties) {
-        [KeychainItemWrapper deleteKeychainValueForKey:property];
+        NSString *key = [self keychainKeyForProperty:property];
+        [KeychainItemWrapper deleteKeychainValueForKey:key];
         
         if ([self respondsToSelector:@selector(singleton)] && [self respondsToSelector:@selector(hasBeenCreated)] && [self hasBeenCreated]) {
             id singleton = [self singleton];
