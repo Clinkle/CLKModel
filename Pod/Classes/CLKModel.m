@@ -355,15 +355,15 @@
 + (id)valueOfKeychainFor:(NSString *)property
 {
     NSString *key = [self keychainKeyForProperty:property];
-    return [KeychainItemWrapper getKeychainValueForKey:key];
+    return [KeychainItemWrapper stringForKey:key];
 }
 
 + (void)setValue:(id)value
 toKeychainForKey:(NSString *)property
 {
     NSString *key = [self keychainKeyForProperty:property];
-    [KeychainItemWrapper saveKeychainValue:value
-                                    forKey:key];
+    [KeychainItemWrapper setData:[value dataUsingEncoding:NSUTF8StringEncoding]
+                          forKey:key];
 }
 
 + (NSString *)keychainKeyForProperty:(NSString *)property
@@ -375,7 +375,7 @@ toKeychainForKey:(NSString *)property
 {
     for (NSString *property in self.keychainBackedProperties) {
         NSString *key = [self keychainKeyForProperty:property];
-        [KeychainItemWrapper deleteKeychainValueForKey:key];
+        [KeychainItemWrapper removeItemForKey:key];
         
         if ([self respondsToSelector:@selector(singleton)] && [self respondsToSelector:@selector(hasBeenCreated)] && [self hasBeenCreated]) {
             id singleton = [self singleton];
@@ -404,7 +404,7 @@ toKeychainForKey:(NSString *)property
 - (void)initializeFromKeychain:(NSString *)property
 {
     NSString *key = [[self class] keychainKeyForProperty:property];
-    id value = [KeychainItemWrapper getKeychainValueForKey:key];
+    id value = [KeychainItemWrapper stringForKey:key];
     if ([self isEmptyValue:value]) {
         value = [self.class defaultValueForProperty:property];
         if ([self isEmptyValue:value]) {
