@@ -660,7 +660,7 @@ toKeychainForKey:(NSString *)property
 
 - (NSString *)description
 {
-    return [NSString stringWithFormat:@"%@ with JSON %@", [self class], [self toJSON]];
+    return [NSString stringWithFormat:@"%@ <%x> with JSON %@", [self class], (int)self, [self toJSON]];
 }
 
 @end
