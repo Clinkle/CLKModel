@@ -117,6 +117,6 @@ SYNTHESIZE_SINGLETON_FOR_CLASS(Contacts)
 @end
 ```
 
-The setters for any of the backed properties will effect the proper serialization and writes to the disk.  Upon re-initialization.  Note that [CLKSingletons](https://github.com/Clinkle/CLKSingletons) is not a dependency to CLKModel, and any singleton or collection-class scheme will do just fine.
+The setters for any of the backed properties will effect the proper serialization and writes to the disk.  Note that [CLKSingletons](https://github.com/Clinkle/CLKSingletons) is not a dependency to CLKModel, and any singleton or collection-class scheme will do just fine.
 
 Upon setting any of the backed properties, the next instance of `Contacts` will be initialized with these fields properly deserialized and set to the respective properties.  Not gonna lie, it's pretty great.
