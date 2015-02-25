@@ -6,6 +6,10 @@
 
 CLKModel also provides the ability to store a particular property to disk, either using `NSUserDefaults` or Apple's `Security` framework.  This feature will store any `CLKModels` as `NSDictionary`, inflating and deflating them automatically.
 
+## Installation
+
+Add `pod 'CLKModel'` to your `Podfile` or download the source [here](https://github.com/Clinkle/CLKModel)
+
 ## Parsing & Serialization
 
 Here is a simple instance of a `CLKModel` subclass
