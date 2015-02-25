@@ -76,3 +76,47 @@ If you have a JSON array of primitives or strings, that'll parse with no extra c
 ```
 
 This class will now recursively inflate and deflate arrays of comments as instances of the `Comment` model, which itself is a `CLKModel` subclass with its own blueprint.  Boom!
+
+
+## Persistance
+
+To persist properties to disk, you'll need a collection class that's a [singleton](https://github.com/Clinkle/CLKSingletons) so that fields can be re-inflated coherently upon re-initialization without namespace collisions.  Persistance can be to `NSUserDefaults` or to the system keychain.  Here's a simple example:
+
+```objc
+@interface Contacts
+DECLARE_SINGLETON_FOR_CLASS(Contacts)
+
+@property (nonatomic, strong) NSArray *relevantContacts;
+@property (nonatomic, assign) NSInteger numTimesContactsHaveRefreshed;
+@property (nonatomic, copy) NSString *contactsAccessToken;
+
+@end
+
+
+@implementation Contacts
+SYNTHESIZE_SINGLETON_FOR_CLASS(Contacts)
+
++ (NSArray *)defaultsBackedProperties
+{
+    return @[@"relevantContacts",
+             @"numTimesContactsHaveRefreshed"];
+}
+
++ (NSArray *)keychainBackedProperties
+{
+    return @[
+             @"contactsAccessToken"
+    ];
+}
+
++ (NSDictionary *)genericTypesForBackedProperties
+{
+    return @{@"relevantContacts": @"Person"};
+}
+
+@end
+```
+
+The setters for any of the backed properties will effect the proper serialization and writes to the disk.  Upon re-initialization.  Note that [CLKSingletons](https://github.com/Clinkle/CLKSingletons) is not a dependency to CLKModel, and any singleton or collection-class scheme will do just fine.
+
+Upon setting any of the backed properties, the next instance of `Contacts` will be initialized with these fields properly deserialized and set to the respective properties.  Not gonna lie, it's pretty great.
