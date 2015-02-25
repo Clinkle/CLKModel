@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = "CLKModel"
-  s.version          = "0.1.0"
+  s.version          = "0.1.1"
   s.summary          = "CLKModel provides an excellent for your iOS app's data layer."
   s.homepage         = "https://github.com/Clinkle/CLKModel"
   s.license          = 'MIT'
