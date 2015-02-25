@@ -60,7 +60,7 @@ CLKModel handles:
 * `NSDate` provided as an `NSNumber` or `NSString` in millis since epoch
 * `CLKModel` subclasses, which are inflated and deflated recursively
 
-If you have a JSON array of primitives or strings, that'll parse with no extra code.  If the array contains JSON that you'd like to define this in your blueprint:
+If you have a JSON array of primitives or strings, that'll parse with no extra code.  If the array contains JSON that you'd like to parse into subsequent `CLKModels`, simply define a generic in your blueprint as follows:
 
 
 ```objc
@@ -71,13 +71,7 @@ If you have a JSON array of primitives or strings, that'll parse with no extra c
                     @"is_array": @YES,
                     @"property": @"comments",
                     @"class": @"Comment"
-                    },
-            @"people" : @{
-                    @"is_array" : @YES,
-                    @"property" : @"people",
-                    @"class" : @"Person"
                     }
-            };
 }
 ```
 
